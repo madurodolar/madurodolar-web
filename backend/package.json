@@ -1,0 +1,15 @@
+{
+    "name": "madurodolar-backend",
+    "version": "1.0.0",
+    "description": "API para obtener tasa USD/VES desde Binance P2P y BCV (CriptoYa)",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "node-fetch": "^3.3.2"
+    }
+  }
+  
