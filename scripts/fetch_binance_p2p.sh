@@ -3,7 +3,7 @@
 # Endpoint de Binance P2P (precio USDT en VES)
 BINANCE_API="https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search"
 
-# Parámetros de búsqueda (USDT, vendedor, VES, Venezuela)
+# Parámetros de  búsqueda (USDT, vendedor, VES, Venezuela)
 POST_DATA=$(cat <<EOF
 {
   "asset": "USDT",
