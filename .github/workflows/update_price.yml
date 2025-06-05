@@ -25,10 +25,10 @@ jobs:
           sudo apt-get install -y jq
 
       # 3) Ejecutar el script que genera price.json
-      - name: Ejecutar fetch_prices.sh
+      - name: Ejecutar fetch_binance_p2p.sh
         run: |
           chmod +x scripts/fetch_binance_p2p.sh
-          ./scripts/fetch_prices.sh
+          ./scripts/fetch_binance_p2p.sh
 
       # 4) Commit + push de price.json (solo si cambió)
       - name: Commit y push de price.json
