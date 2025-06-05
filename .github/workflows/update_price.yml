@@ -1,0 +1,48 @@
+# .github/workflows/update_price.yml
+
+name: 📈 Update Binance P2P + BCV Price
+
+on:
+  # Corre cada minuto; si prefieres cada 5 minutos, cambia a '*/5 * * * *'
+  schedule:
+    - cron: '*/1 * * * *'
+  # Permite ejecutarlo manualmente desde la pestaña Actions
+  workflow_dispatch:
+
+jobs:
+  update_prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Checkout del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2) Instalar 'jq' (necesario para parsear/armar JSON)
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      # 3) Ejecutar el script que genera price.json
+      - name: Ejecutar fetch_prices.sh
+        run: |
+          chmod +x scripts/fetch_prices.sh
+          ./scripts/fetch_prices.sh
+
+      # 4) Commit + push de price.json (solo si cambió)
+      - name: Commit y push de price.json
+        run: |
+          # Configuramos un usuario genérico para commits desde Actions
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Añadimos price.json al área (si no cambió, git add no falla por '|| true')
+          git add price.json || true
+
+          # Si no hay cambios en price.json, salimos sin error
+          git diff --quiet --exit-code && echo "No hay cambios en price.json" && exit 0
+
+          # Si sí hay cambios, hacemos commit y push
+          git commit -m "Actualiza price.json: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          git push origin main
