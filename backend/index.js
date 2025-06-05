@@ -65,24 +65,27 @@ app.get('/api/binance', async (req, res) => {
  *    y devuelve { rate, updated }
  */
 app.get('/api/bcv', async (req, res) => {
-  try {
-    const response = await fetch('https://criptoya.com/api/dolar/oficial');
-    if (!response.ok) {
-      throw new Error(`Status ${response.status}`);
+    try {
+      const response = await fetch(BCV_URL, { agent });
+      const textoRaw = await response.text();  // Leemos como texto para inspeccionarlo
+      console.log("Raw BCV response:", textoRaw); // Ver en Log qué devolvió realmente
+      
+      // Si esperas HTML y luego extraer la tasa con regex, pon aquí tu lógica:
+      const regex = /<span class="tasa-oficial">([\d,.]+)<\/span>/;
+      const match = textoRaw.match(regex);
+      if (!match) {
+        // Si no encontramos la etiqueta con la tasa, devolvemos un JSON de error
+        throw new Error("No se pudo extraer la tasa BCV (se recibió: " + textoRaw + ")");
+      }
+      
+      const tasa = parseFloat(match[1].replace(',', '.')); 
+      return res.json({ rate: tasa }); // Devolvemos siempre un JSON válido
+    } catch (err) {
+      console.error("Error en /api/bcv:", err.message);
+      return res.status(500).json({ error: "Error obteniendo tasa BCV", details: err.message });
     }
-    const json = await response.json();
-    // La API de CriptoYa devuelve algo como { "oficial": 120.35, ... }
-    const rate = json.oficial;
-    const now = new Date().toISOString();
-    return res.json({
-      rate: rate,
-      updated: now
-    });
-  } catch (err) {
-    console.error('Error en /api/bcv:', err);
-    return res.status(500).json({ error: 'Error obteniendo tasa BCV', details: err.message });
-  }
-});
+  });
+  
 
 // Si quieres que respondan también desde la raíz (opcional)
 app.get('/', (req, res) => {
