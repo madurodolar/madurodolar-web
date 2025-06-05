@@ -27,7 +27,7 @@ jobs:
       # 3) Ejecutar el script que genera price.json
       - name: Ejecutar fetch_prices.sh
         run: |
-          chmod +x scripts/fetch_prices.sh
+          chmod +x scripts/fetch_binance_p2p.sh
           ./scripts/fetch_prices.sh
 
       # 4) Commit + push de price.json (solo si cambió)
