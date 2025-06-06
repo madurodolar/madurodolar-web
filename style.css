@@ -98,6 +98,7 @@ p.rate {
   width: 32px;
   height: 32px;
   vertical-align: middle;
+  filter: brightness(0) invert(1); /* Makes the icons white */
 }
 
 /* ─────────────────────────────────────────────────────────────
