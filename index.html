@@ -2,115 +2,188 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- ================= SEO Metadata ================= -->
-  <title>MaduroDólar – Tasa USD/VES en Tiempo Real</title>
-  <meta name="description" content="Consulta la tasa paralelo USD/VES (Binance P2P) y la tasa oficial BCV en tiempo real.">
-  <meta name="keywords" content="dólar paralelo Venezuela, Binance P2P, BCV, tasa oficial, Maduro Dólar">
-  <meta name="author" content="www.madurodolar.com">
-  <meta name="robots" content="index, follow">
-
-  <!-- Open Graph (para compartir en redes sociales) -->
-  <meta property="og:title" content="MaduroDólar – Tasa USD/VES en Tiempo Real" />
-  <meta property="og:description" content="Consulta la tasa paralelo USD/VES (Binance P2P) y la tasa oficial BCV en tiempo real." />
-  <meta property="og:image" content="https://www.madurodolar.com/logo.png" />
-  <meta property="og:url" content="https://www.madurodolar.com" />
-  <meta property="og:type" content="website" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="MaduroDólar – Tasa USD/VES en Tiempo Real" />
-  <meta name="twitter:description" content="Consulta la tasa paralelo USD/VES (Binance P2P) y la tasa oficial BCV en tiempo real." />
-  <meta name="twitter:image" content="https://www.madurodolar.com/logo.png" />
-
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>MaduroDólar</title>
   <link rel="stylesheet" href="style.css" />
-
-  <!-- Favicon (opcional) -->
-  <link rel="icon" href="logo.png" type="image/png" />
 </head>
 <body>
   <div class="container">
-    <!-- LOGO -->
-    <img src="logo.png" alt="Logo MaduroDólar" class="logo" />
+    <!-- ───────────────────────────────────────────────────────────
+         LOGO
+    ─────────────────────────────────────────────────────────── -->
+    <img
+      src="logo.png"
+      alt="Logo MaduroDólar"
+      class="logo"
+      onerror="this.onerror=null; this.src='logo.png'"
+    />
 
-    <!-- ===== TARJETA 1: Binance P2P ===== -->
+    <!-- ───────────────────────────────────────────────────────────
+         CARD #1: Binance P2P
+    ─────────────────────────────────────────────────────────── -->
     <div class="card">
       <h2>Precio paralelo USD/VES (Binance P2P)</h2>
       <p class="rate">
         <strong>Venta:</strong>
-        <span id="sell" class="value">0,00</span> VES<br />
+        <span id="sell" class="value">‒</span> VES<br />
         <strong>Compra:</strong>
-        <span id="buy" class="value">0,00</span> VES
+        <span id="buy" class="value">‒</span> VES
       </p>
-      <p id="updated-binance" class="updated">Última actualización: --</p>
+      <p id="updated-binance" class="updated">
+        Última actualización: <span>‒</span>
+      </p>
     </div>
 
-    <!-- ===== TARJETA 2: Dólar BCV OFICIAL ===== -->
+    <!-- ───────────────────────────────────────────────────────────
+         CARD #2: Dólar BCV
+    ─────────────────────────────────────────────────────────── -->
     <div class="card">
       <h2>Precio oficial USD/VES (Dólar BCV)</h2>
       <p class="rate">
         <strong>Tasa BCV:</strong>
-        <span id="bcv" class="value">0,00</span> VES
+        <span id="bcv" class="value">‒</span> VES
       </p>
-      <p id="updated-bcv" class="updated">Última actualización: --</p>
+      <p id="updated-bcv" class="updated">
+        Última actualización: <span>‒</span>
+      </p>
     </div>
 
-    <!-- ===== Íconos Sociales ===== -->
-    <p class="social">
-      <strong>Síguenos en nuestras cuentas:</strong>
-      <a href="https://t.me/madurodolar" target="_blank" title="Telegram">
-        <img src="icons/telegram.svg" alt="Telegram" class="icon" />
+    <!-- ───────────────────────────────────────────────────────────
+         SOCIAL ICONS
+    ─────────────────────────────────────────────────────────── -->
+    <p class="telegram">
+      Síguenos en nuestras cuentas:
+      <a
+        href="https://t.me/madurodolar"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          src="telegram.png"
+          alt="Telegram MaduroDólar"
+          class="icon"
+        />
       </a>
-      <a href="https://instagram.com/madurodolar" target="_blank" title="Instagram">
-        <img src="icons/instagram.svg" alt="Instagram" class="icon" />
+      <a
+        href="https://www.instagram.com/madurodolar"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          src="instagram.png"
+          alt="Instagram MaduroDólar"
+          class="icon"
+        />
       </a>
-      <a href="https://x.com/madurodolar" target="_blank" title="X">
-        <img src="icons/x.svg" alt="X" class="icon" />
+      <a
+        href="https://x.com/madurodolar"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img src="x.png" alt="X MaduroDólar" class="icon" />
       </a>
     </p>
-    
 
-    <!-- PIE -->
-    <p class="footer">Datos actualizados cada minuto vía servidor Backend</p>
+    <p class="footer">
+      Datos actualizados cada minuto vía servidor Backend
+    </p>
   </div>
 
-  <!-- ================ SCRIPT JS ================ -->
+  <!-- ───────────────────────────────────────────────────────────
+       JAVASCRIPT: fetch both endpoints and update the DOM
+  ─────────────────────────────────────────────────────────── -->
   <script>
-    // URL base de tu backend en Render:
-    const API_BASE = 'https://madurodolar-web.onrender.com';
+    const SELL_EL = document.getElementById("sell");
+    const BUY_EL = document.getElementById("buy");
+    const UPDATED_BINANCE_EL = document.querySelector(
+      "#updated-binance span"
+    );
 
-    // 1) Fetch Binance P2P
-    fetch(`${API_BASE}/api/binance`)
-      .then((res) => res.json())
-      .then((data) => {
-        document.getElementById('sell').textContent = parseFloat(data.sell).toFixed(2);
-        document.getElementById('buy').textContent = parseFloat(data.buy).toFixed(2);
-        // Si quieres mostrar la hora:
-        const fechaB = new Date(data.updated).toLocaleString('es-VE');
-        document.getElementById('updated-binance').textContent = 'Última actualización: ' + fechaB;
-      })
-      .catch((err) => {
-        console.error('Error al obtener Binance P2P:', err);
-        document.getElementById('sell').textContent = 'Error';
-        document.getElementById('buy').textContent = 'Error';
-        document.getElementById('updated-binance').textContent = 'Última actualización: Error';
-      });
+    const BCV_EL = document.getElementById("bcv");
+    const UPDATED_BCV_EL = document.querySelector("#updated-bcv span");
 
-    // 2) Fetch BCV oficial
-    fetch(`${API_BASE}/api/bcv`)
-      .then((res) => res.json())
-      .then((data) => {
-        document.getElementById('bcv').textContent = parseFloat(data.rate).toFixed(2);
-        const fechaC = new Date(data.updated).toLocaleString('es-VE');
-        document.getElementById('updated-bcv').textContent = 'Última actualización: ' + fechaC;
-      })
-      .catch((err) => {
-        console.error('Error al obtener BCV:', err);
-        document.getElementById('bcv').textContent = 'Error';
-        document.getElementById('updated-bcv').textContent = 'Última actualización: Error';
+    // Helper to format a JS Date into "DD/MM/YYYY, HH:MM:SS" (es-VE style)
+    function formatDate(date) {
+      if (!(date instanceof Date) || isNaN(date)) {
+        return "‒";
+      }
+      return date.toLocaleString("es-VE", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
       });
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // Fetch Binance P2P endpoint every time the page loads (and can be re‐run manually)
+    // ───────────────────────────────────────────────────────────
+    function loadBinance() {
+      fetch("https://madurodolar-web.onrender.com/api/binance")
+        .then((res) => {
+          if (!res.ok) throw new Error("Network response was not OK");
+          return res.json();
+        })
+        .then((data) => {
+          // data should be { sell:"130.500", buy:"128.000", updated:"2025-06-06T12:54:37.436Z" }
+          let sellF = parseFloat(data.sell);
+          let buyF = parseFloat(data.buy);
+          let dt = new Date(data.updated);
+
+          // If parseFloat failed, NaN will result; show "Error"
+          SELL_EL.textContent = isNaN(sellF) ? "Error" : sellF.toFixed(2);
+          BUY_EL.textContent = isNaN(buyF) ? "Error" : buyF.toFixed(2);
+
+          UPDATED_BINANCE_EL.textContent = isNaN(dt)
+            ? "Error"
+            : formatDate(dt);
+        })
+        .catch((err) => {
+          console.error("Error obteniendo Binance P2P:", err);
+          SELL_EL.textContent = "Error";
+          BUY_EL.textContent = "Error";
+          UPDATED_BINANCE_EL.textContent = "Error";
+        });
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // Fetch BCV endpoint every time the page loads
+    // ───────────────────────────────────────────────────────────
+    function loadBCV() {
+      fetch("https://madurodolar-web.onrender.com/api/bcv")
+        .then((res) => {
+          if (!res.ok) throw new Error("Network response was not OK");
+          return res.json();
+        })
+        .then((data) => {
+          // data should be { rate: 174231.00, updated:"2025-06-06T12:55:00.000Z" }
+          let rateF = parseFloat(data.rate);
+          let dt = new Date(data.updated);
+
+          BCV_EL.textContent = isNaN(rateF) ? "Error" : rateF.toFixed(2);
+          UPDATED_BCV_EL.textContent = isNaN(dt) ? "Error" : formatDate(dt);
+        })
+        .catch((err) => {
+          console.error("Error obteniendo BCV:", err);
+          BCV_EL.textContent = "Error";
+          UPDATED_BCV_EL.textContent = "Error";
+        });
+    }
+
+    // Run both once on page load:
+    loadBinance();
+    loadBCV();
+
+    // Optionally, if you ever want to auto‐refresh every 60 seconds:
+    // setInterval(() => {
+    //   loadBinance();
+    //   loadBCV();
+    // }, 60000);
   </script>
 </body>
 </html>

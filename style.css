@@ -1,109 +1,110 @@
-/* ============================= */
-/*      Reset / Ajustes base     */
-/* ============================= */
+/* ─────────────────────────────────────────────────────────────
+   Global reset & body
+───────────────────────────────────────────────────────────── */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    background-color: #003366;
-    font-family: Arial, sans-serif;
-    color: #ffffff;
-  }
-  
-  /* ============================= */
-  /*       Contenedor principal    */
-  /* ============================= */
-  .container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
-  }
-  
-  /* ============================= */
-  /*   Logo (centrado, margen)     */
-  /* ============================= */
-  .logo {
-    width: 120px;
-    display: block;
-    margin: 0 auto 20px auto;
-  }
-  
-  /* ============================= */
-  /*       Tarjetas (cards)        */
-  /* ============================= */
-  .card {
-    background-color: #1a315a;
-    border-radius: 12px;
-    padding: 18px 12px;
-    margin-bottom: 20px;
-  }
-  
-  /* ============================= */
-  /*   Títulos pequeños (h2)       */
-  /* ============================= */
-  .card h2 {
-    font-size: 18px;
-    margin-bottom: 8px;
-  }
-  
-  /* ============================= */
-  /*     Párrafo de la tasa        */
-  /* ============================= */
-  .rate {
-    font-size: 14px;
-    line-height: 1.4;
-  }
-  
-  /* ============================= */
-  /*     Números grandes/amarillos */
-  /* ============================= */
-  .value {
-    font-size: 28px;
-    color: #ffd700;
-    font-weight: bold;
-  }
-  
-  /* ============================= */
-  /*      Texto de “Actualizado”    */
-  /* ============================= */
-  .updated {
-    font-size: 13px;
-    margin-top: 10px;
-    color: #ffffff;
-  }
-  
-  /* ============================= */
-  /*       Íconos Sociales          */
-  /* ============================= */
-  .socials {
-    margin: 20px 0 10px 0;
-  }
-  
-  .icon {
-    width: 32px;
-    margin: 0 8px;
-    filter: invert(100%); /* Si tus SVG son negros, los pone blancos */
-  }
-  
-  /* ============================= */
-  /*       Pie de página info      */
-  /* ============================= */
-  .footer {
-    margin-top: 18px;
-    font-size: 12px;
-    color: #ffffff;
-  }
-  
-  /* ============================= */
-  /*    Mensaje de error (opc)     */
-  /* ============================= */
-  .error {
-    color: #ff4c4c;
-    font-size: 16px;
-    margin-top: 10px;
-  }
-  
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #003366;
+  font-family: Arial, sans-serif;
+  color: #ffffff;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Center container
+───────────────────────────────────────────────────────────── */
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Logo
+───────────────────────────────────────────────────────────── */
+.logo {
+  display: block;
+  width: 160px;
+  height: auto;
+  margin: 0 auto 24px auto;
+  object-fit: contain;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Card style for each rate block
+───────────────────────────────────────────────────────────── */
+.card {
+  background: #014080;
+  border-radius: 8px;
+  padding: 16px 12px;
+  margin-bottom: 24px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Heading inside each card (small size)
+───────────────────────────────────────────────────────────── */
+.card h2 {
+  font-size: 18px;
+  font-weight: normal;
+  margin-bottom: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   .rate paragraph: small label + large numeric
+───────────────────────────────────────────────────────────── */
+p.rate {
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Numeric values (“sale” / “buy” / BCV): large + yellow + bold
+───────────────────────────────────────────────────────────── */
+.value {
+  font-size: 28px;
+  color: #ffd700;  /* bright yellow */
+  font-weight: bold;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   “Última actualización:” text (slightly smaller, grayish)
+───────────────────────────────────────────────────────────── */
+.updated {
+  font-size: 12px;
+  color: #ccd6de;
+  margin-top: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Social icons and “Síguenos en nuestras cuentas:”
+───────────────────────────────────────────────────────────── */
+.telegram {
+  font-size: 16px;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  color: #ffffff;
+}
+
+.telegram a {
+  margin: 0 8px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Footer text
+───────────────────────────────────────────────────────────── */
+.footer {
+  font-size: 12px;
+  color: #ccd6de;
+  margin-top: 24px;
+}
