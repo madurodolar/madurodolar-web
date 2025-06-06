@@ -21,6 +21,18 @@ EOF
 # Realiza el request
 RESPONSE=$(curl -s -X POST "$BINANCE_API" -H "Content-Type: application/json" --data-raw "$POST_DATA")
 
+# Check if the response is empty or invalid
+if [[ -z "$RESPONSE" ]]; then
+  echo "Error: Empty response from Binance API"
+  exit 1
+fi
+
+# Validate the response with jq
+if ! echo "$RESPONSE" | jq . > /dev/null 2>&1; then
+  echo "Error: Invalid JSON response from Binance API"
+  exit 1
+fi
+
 # Extrae precios de los primeros vendedores y saca promedio
 PRICES=$(echo "$RESPONSE" | jq '[.data[].adv.price | tonumber]')
 AVG_PRICE=$(echo "$PRICES" | jq 'add / length')
