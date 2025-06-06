@@ -56,21 +56,21 @@
       Síguenos en nuestras cuentas:
       <a href="https://t.me/madurodolar" target="_blank" rel="noopener noreferrer">
         <img
-          src="telegram.svg"
+          src="telegram.png"
           alt="Telegram MaduroDólar"
           class="icon"
         />
       </a>
       <a href="https://www.instagram.com/madurodolar" target="_blank" rel="noopener noreferrer">
         <img
-          src="instagram.svg"
+          src="instagram.png"
           alt="Instagram MaduroDólar"
           class="icon"
         />
       </a>
       <a href="https://x.com/madurodolar" target="_blank" rel="noopener noreferrer">
         <img
-          src="x.svg"
+          src="x.png"
           alt="X MaduroDólar"
           class="icon"
         />
@@ -91,6 +91,8 @@
     const BUY_EL = document.getElementById("buy");
     const UPDATED_BINANCE_EL = document.querySelector("#updated-binance span");
 
+    const BCV_EL = document.getElementById("bcv");
+    const UPDATED_BCV_EL = document.querySelector("#updated-bcv span");
 
     // Helper to format a JS Date to "DD/MM/YYYY, HH:MM:SS" in es-VE locale:
     function formatDate(date) {
@@ -139,21 +141,21 @@
     // 2) Load Dólar BCV Rate
     // ───────────────────────────────────────────────────────────
     function loadBCV() {
-      fetch("bcv.json")
+      fetch("https://madurodolar-web.onrender.com/api/bcv")
         .then((res) => {
-          if (!res.ok) throw new Error("No se pudo cargar bcv.json");
+          if (!res.ok) throw new Error("Network response was not OK");
           return res.json();
         })
         .then((data) => {
-          // data → { rate:174231.00, updated:"2025-06-06T13:00:00.000Z" }
-          let rateF = parseFloat(data.rate);
-          let dt = new Date(data.updated);
+          // data should be { rate: 174231.00, updated:"2025-06-06T12:55:00.000Z" }
+          const rateF = parseFloat(data.rate);
+          const dt = new Date(data.updated);
 
           BCV_EL.textContent = isNaN(rateF) ? "Error" : rateF.toFixed(2);
-          UPDATED_BCV_EL.textContent = isNaN(dt) ? "Error" : formatDate(dt);
+          UPDATED_BCV_EL.textContent = formatDate(dt);
         })
         .catch((err) => {
-          console.error("Error cargando BCV (bcv.json):", err);
+          console.error("Error obteniendo Dólar BCV:", err);
           BCV_EL.textContent = "Error";
           UPDATED_BCV_EL.textContent = "Error";
         });
