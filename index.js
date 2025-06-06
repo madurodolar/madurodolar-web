@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 
 /**
  * 1. Endpoint /api/binance
- *    Hace POST a Binance P2P y devuelve { sell, buy, updated }
+ *    Hace POST a  Binance P2P y devuelve { sell, buy, updated }
  */
 app.get('/api/binance', async (req, res) => {
   try {
