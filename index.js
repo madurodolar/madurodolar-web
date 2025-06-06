@@ -1,132 +1,116 @@
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 //   backend/index.js
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
+import https from "https";
 
+// ─────────────────────────────────────────────────────────────
+// 1) Create Express app & define port
+// ─────────────────────────────────────────────────────────────
 const app = express();
+// Render (and many platforms) will inject process.env.PORT automatically:
 const PORT = process.env.PORT || 3000;
 
-// ── Enable CORS for all origins (so your front end at https://www.madurodolar.com
-//       can fetch these routes without being blocked). If you prefer to lock it down
-//       to only your Pages domain, replace `cors()` with:
-//
-//       app.use(cors({ origin: "https://www.madurodolar.com" }));
-//
-app.use(cors());
+// ─────────────────────────────────────────────────────────────
+// 2) Enable CORS so that your front-end can fetch from this server
+//    without running into CORS policy errors.
+//    If you only ever fetch from https://www.madurodolar.com, you can lock it down.
+// ─────────────────────────────────────────────────────────────
+app.use(
+  cors({
+    // Only allow requests coming from your front-end domain:
+    origin: "https://www.madurodolar.com",
+  })
+);
 
-//
-// GET /api/binance
-// ───────────────────────────────────────────────────────────────────────────────
-// Fetches the Binance P2P USD/VES rate and returns a JSON object:
-//   { sell: "<string price>", buy: "<string price>", updated: "<ISO timestamp>" }
-//
-// NOTE: Binance’s “P2P” endpoint is not officially documented in a single URL, so
-//       below is a commonly used public URL that BINANCE’s web client hits.
-//       If this stops working, you may need to adjust the URL or use a tiny proxy.
-//       
-// For now, this uses the same proxy approach we tested earlier:
-//   https://binance-p2p-proxy‐gvvl.onrender.com/api/price
-// which simply returns JSON like { sell:"131.000", buy:"129.200", updated:"…" }.
-//
+// ─────────────────────────────────────────────────────────────
+// 3) Set up an HTTPS agent to disable SSL verification if needed
+//    (sometimes CriptoYa or Binance proxies have self-signed/invalid certs)
+// ─────────────────────────────────────────────────────────────
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
+
+// ─────────────────────────────────────────────────────────────
+// 4) GET /api/binance
+//    Proxies the Binance P2P endpoint
+//    (assumes you have deployed your own binance-proxy to onrender.com)
+//    Returns JSON of the form: { sell: "131.000", buy: "129.500", updated: "2025-06-06T12:34:56.789Z" }
+// ─────────────────────────────────────────────────────────────
 app.get("/api/binance", async (req, res) => {
   try {
-    // ── 1) Fetch from our existing Binan‐ce P2P proxy
-    const response = await fetch(
-      "https://binance-p2p-proxy-gvvl.onrender.com/api/price"
-    );
+    // Replace this URL with your actual Binance P2P proxy on Render (or wherever):
+    const BINANCE_PROXY_URL =
+      "https://madurodolar-web.onrender.com/api/binance"; 
+    // If you are calling a completely external proxy, it might look like:
+    // const BINANCE_PROXY_URL = "https://binance-p2p-proxy-gvvl.onrender.com/api/price";
 
+    const response = await fetch(BINANCE_PROXY_URL, { agent: httpsAgent });
     if (!response.ok) {
-      throw new Error(`Binance proxy responded ${response.status}`);
+      throw new Error(
+        `Binance proxy responded with ${response.status} ${response.statusText}`
+      );
     }
-
-    // ── 2) Parse the JSON. We expect an object like:
-    //       { sell: "131.000", buy: "129.200", updated: "2025-06-06T12:54:37.436Z" }
     const data = await response.json();
-
-    // ── 3) Return exactly that same shape to the caller:
-    //       { sell, buy, updated }
+    //
+    // We expect `data` to already look like:
+    //   { sell: "131.000", buy: "129.500", updated: "2025-06-06T12:34:56.789Z" }
+    //
     return res.json({
-      sell: data.sell,
-      buy: data.buy,
-      updated: data.updated,
+      sell: data.sell ?? null,
+      buy: data.buy ?? null,
+      updated: data.updated ?? new Date().toISOString(),
     });
   } catch (err) {
     console.error("Error fetching Binance P2P:", err.message);
-    return res.status(500).json({
-      error: "Error obteniendo Binance P2P",
-      details: err.message,
-    });
+    // If something fails, return a 500 with nulls (front-end will show “Error”)
+    return res.status(500).json({ sell: null, buy: null, updated: null });
   }
 });
 
-//
-// GET /api/bcv
-// ───────────────────────────────────────────────────────────────────────────────
-// Fetches the official USD/VES (“Dólar BCV”) from CriptoYa (public API) and returns:
-//   { rate: <number>, updated: "<ISO timestamp>" }
-//
-// CriptoYa’s “oficial” endpoint returns something like:
-//   { “oficial”: “174.231,00”, … }
-// We parse the “oficial” string, replace “,” → “.”, turn it into a float.
-//
+// ─────────────────────────────────────────────────────────────
+// 5) GET /api/bcv
+//    Proxies the Dólar Oficial (BCV) via CriptoYa.
+//    CriptoYa’s “/api/dolar/oficial” returns something like:
+//      { "oficial": 175000.00, "fecha": "2025-06-06T12:35:00.000Z", … }
+//    We will repackage it as { rate: 175000.00, updated: "2025-06-06T12:35:00.000Z" }
+// ─────────────────────────────────────────────────────────────
 app.get("/api/bcv", async (req, res) => {
   try {
-    // ── 1) Fetch from CriptoYa’s Dólar Oficial endpoint:
-    const response = await fetch("https://criptoya.com/api/dolar/oficial");
+    const CRIPTOYA_URL = "https://criptoya.com/api/dolar/oficial";
 
+    const response = await fetch(CRIPTOYA_URL, { agent: httpsAgent });
     if (!response.ok) {
-      throw new Error(`CriptoYa responded ${response.status}`);
+      throw new Error(
+        `CriptoYa responded with ${response.status} ${response.statusText}`
+      );
     }
-
-    // ── 2) Parse JSON. Example result:
-    //       { 
-    //         oficial: "174.231,00",
-    //         "blue": "180.500,00", 
-    //         […] 
-    //       }
     const json = await response.json();
+    //
+    // Example CriptoYa JSON:
+    //   {
+    //     "oficial": 175000.00,
+    //     "fecha": "2025-06-06T12:35:00.000Z",
+    //     …other fields…
+    //   }
+    //
+    const rate = typeof json.oficial === "number" ? json.oficial : NaN;
+    const updated = typeof json.fecha === "string" ? json.fecha : new Date().toISOString();
 
-    // ── 3) Extract the “oficial” field and convert "174.231,00" → 174231.00
-    //       (replace the period thousand‐separator, replace comma decimal‐separator → “.”)
-    const rawString = json.oficial || json.oficial || "";
-    const normalized = rawString.replace(/\./g, "").replace(",", ".");
-    const rate = parseFloat(normalized);
-
-    if (Number.isNaN(rate)) {
-      throw new Error(`No se pudo parsear la tasa BCV: "${rawString}"`);
-    }
-
-    // ── 4) Return a simple JSON { rate, updated }
-    return res.json({
-      rate,
-      updated: new Date().toISOString(),
-    });
+    return res.json({ rate, updated });
   } catch (err) {
-    console.error("Error fetching BCV rate:", err.message);
-    return res.status(500).json({
-      error: "Error obteniendo BCV",
-      details: err.message,
-    });
+    console.error("Error fetching Dólar BCV:", err.message);
+    return res.status(500).json({ rate: null, updated: null });
   }
 });
 
-//
-// If you ever want a root‐level health-check or “hello” route, you could add:
-//
-// app.get("/", (req, res) => {
-//   res.send("MaduroDólar backend is running 🟢");
-// });
-//
-
-// ───────────────────────────────────────────────────────────────────────────────
-// Start listening on `PORT` (render will supply process.env.PORT for you).
-// When you test locally, it’ll default to port 3000 if PORT is not set.
-//
-
+// ─────────────────────────────────────────────────────────────
+// 6) Start listening
+// ─────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`MaduroDólar backend corriendo en puerto ${PORT}`);
+  console.log(`MaduroDólar backend running on port ${PORT}`);
 });
 
