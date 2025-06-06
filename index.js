@@ -21,8 +21,8 @@ app.get("/api/binance", async (req, res) => {
   try {
     const BINANCE_API = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search";
 
-    // Helper to fetch average price from Binance for a trade type
-    const fetchAvgPrice = async (tradeType) => {
+    // Function to fetch and calculate the average price
+    const fetchAveragePrice = async (tradeType) => {
       const POST_DATA = {
         asset: "USDT",
         fiat: "VES",
@@ -31,7 +31,7 @@ app.get("/api/binance", async (req, res) => {
         payTypes: [],
         publisherType: null,
         rows: 5,
-        tradeType,
+        tradeType: tradeType,
       };
 
       const response = await fetch(BINANCE_API, {
@@ -43,28 +43,29 @@ app.get("/api/binance", async (req, res) => {
       });
 
       if (!response.ok) {
-        throw new Error(`Binance API (${tradeType}) responded ${response.status}`);
+        throw new Error(`Binance API responded ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      const prices = data.data.map((item) => parseFloat(item.adv.price));
 
+      // Extract prices from the response
+      const prices = data.data.map((item) => parseFloat(item.adv.price));
       if (prices.length === 0) {
         throw new Error(`No prices found for tradeType: ${tradeType}`);
       }
 
+      // Calculate the average price
       return prices.reduce((sum, price) => sum + price, 0) / prices.length;
     };
 
-    // Get both SELL and BUY prices
-    const [sell, buy] = await Promise.all([
-      fetchAvgPrice("SELL"),
-      fetchAvgPrice("BUY"),
-    ]);
+    // Fetch sell and buy rates
+    const sellRate = await fetchAveragePrice("SELL");
+    const buyRate = await fetchAveragePrice("BUY");
 
+    // Respond with both rates and the timestamp
     return res.json({
-      sell: sell.toFixed(2),
-      buy: buy.toFixed(2),
+      sell: sellRate.toFixed(2),
+      buy: buyRate.toFixed(2),
       updated: new Date().toISOString(),
     });
   } catch (err) {
