@@ -123,4 +123,3 @@ app.get("/api/bcv", async (req, res) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`MaduroDólar backend running on port ${PORT}`);
 });
-// index.js (Backend, to deploy on Render)
