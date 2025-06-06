@@ -4,16 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MaduroDólar</title>
-
-  <!-- Ícono para SEO/Bookmarks -->
-  <link rel="icon" href="logo.png" type="image/png" />
-
-  <!-- Meta description / Open Graph mínimos -->
-  <meta name="description" content="Consulta en tiempo real la tasa del dólar paralelo (Binance P2P) y la tasa oficial (BCV) en Venezuela. Actualización cada minuto." />
-  <meta property="og:title" content="MaduroDólar – USD/VES Paralelo y Oficial" />
-  <meta property="og:description" content="Consulta en tiempo real la tasa del dólar paralelo (Binance P2P) y la tasa oficial (BCV) en Venezuela." />
-  <meta property="og:image" content="https://www.madurodolar.com/logo.png" />
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -30,7 +20,7 @@
     />
 
     <!-- ───────────────────────────────────────────────────────────
-         TARJETA #1: Binance P2P (automático)
+         CARD #1: Binance P2P
     ─────────────────────────────────────────────────────────── -->
     <div class="card">
       <h2>Precio paralelo USD/VES (Binance P2P)</h2>
@@ -46,7 +36,7 @@
     </div>
 
     <!-- ───────────────────────────────────────────────────────────
-         TARJETA #2: Dólar BCV (manual desde bcv.json)
+         CARD #2: Dólar BCV
     ─────────────────────────────────────────────────────────── -->
     <div class="card">
       <h2>Precio oficial USD/VES (Dólar BCV)</h2>
@@ -60,44 +50,52 @@
     </div>
 
     <!-- ───────────────────────────────────────────────────────────
-         ICONOS SOCIALES
+         SOCIAL ICONS
     ─────────────────────────────────────────────────────────── -->
     <p class="telegram">
       Síguenos en nuestras cuentas:
       <a href="https://t.me/madurodolar" target="_blank" rel="noopener noreferrer">
-        <img src="telegram.png" alt="Telegram MaduroDólar" class="icon" />
+        <img
+          src="telegram.svg"
+          alt="Telegram MaduroDólar"
+          class="icon"
+        />
       </a>
       <a href="https://www.instagram.com/madurodolar" target="_blank" rel="noopener noreferrer">
-        <img src="instagram.png" alt="Instagram MaduroDólar" class="icon" />
+        <img
+          src="instagram.svg"
+          alt="Instagram MaduroDólar"
+          class="icon"
+        />
       </a>
       <a href="https://x.com/madurodolar" target="_blank" rel="noopener noreferrer">
-        <img src="x.png" alt="X MaduroDólar" class="icon" />
+        <img
+          src="x.svg"
+          alt="X MaduroDólar"
+          class="icon"
+        />
       </a>
     </p>
 
     <p class="footer">
       Datos actualizados cada minuto vía servidor Backend
-      <br />
-      Tasa BCV actualizada manualmente vía <code>bcv.json</code>
     </p>
   </div>
 
   <!-- ───────────────────────────────────────────────────────────
-       JAVASCRIPT PARA ACTUALIZAR LOS VALORES EN PANTALLA
+       JAVASCRIPT: Fetch both endpoints & update the DOM
   ─────────────────────────────────────────────────────────── -->
   <script>
-    // Referencias a los elementos del DOM
+    // Cache references to the DOM elements:
     const SELL_EL = document.getElementById("sell");
     const BUY_EL = document.getElementById("buy");
     const UPDATED_BINANCE_EL = document.querySelector("#updated-binance span");
 
-    const BCV_EL = document.getElementById("bcv");
-    const UPDATED_BCV_EL = document.querySelector("#updated-bcv span");
 
-    // Helper: formatea un objeto Date en "DD/MM/YYYY, HH:MM:SS" (es-VE)
+    // Helper to format a JS Date to "DD/MM/YYYY, HH:MM:SS" in es-VE locale:
     function formatDate(date) {
       if (!(date instanceof Date) || isNaN(date)) {
-        return "‒";
+        return "Error";
       }
       return date.toLocaleString("es-VE", {
         year: "numeric",
@@ -110,26 +108,24 @@
     }
 
     // ───────────────────────────────────────────────────────────
-    // 1) CARGAR la tasa de Binance P2P (automático, desde price.json o desde /api/binance)
+    // 1) Load Binance P2P Rate
     // ───────────────────────────────────────────────────────────
     function loadBinance() {
-      // Si quieres leerlo directamente de price.json (generado por GitHub Actions),
-      // usa: fetch("price.json")
-      // Si prefieres invocar tu servidor backend, usa:
-      fetch("/api/binance")
+      fetch("https://madurodolar-web.onrender.com/api/binance")
         .then((res) => {
           if (!res.ok) throw new Error("Network response was not OK");
           return res.json();
         })
         .then((data) => {
-          // data → { sell:"132.450", buy:"131.000", updated:"2025-06-06T12:54:37.436Z" }
-          let sellF = parseFloat(data.sell);
-          let buyF = parseFloat(data.buy);
-          let dt = new Date(data.updated);
+          // data should be { sell:"130.500", buy:"128.000", updated:"2025-06-06T12:54:37.436Z" }
+          const sellF = parseFloat(data.sell);
+          const buyF = parseFloat(data.buy);
+          const dt = new Date(data.updated);
 
           SELL_EL.textContent = isNaN(sellF) ? "Error" : sellF.toFixed(2);
           BUY_EL.textContent = isNaN(buyF) ? "Error" : buyF.toFixed(2);
-          UPDATED_BINANCE_EL.textContent = isNaN(dt) ? "Error" : formatDate(dt);
+
+          UPDATED_BINANCE_EL.textContent = formatDate(dt);
         })
         .catch((err) => {
           console.error("Error obteniendo Binance P2P:", err);
@@ -140,7 +136,7 @@
     }
 
     // ───────────────────────────────────────────────────────────
-    // 2) CARGAR la tasa BCV de forma manual (desde bcv.json)
+    // 2) Load Dólar BCV Rate
     // ───────────────────────────────────────────────────────────
     function loadBCV() {
       fetch("bcv.json")
@@ -163,12 +159,17 @@
         });
     }
 
-    // Ejecutamos ambas funciones al cargar la página:
+    // ───────────────────────────────────────────────────────────
+    // 3) Run both on page load
+    // ───────────────────────────────────────────────────────────
     loadBinance();
     loadBCV();
 
-    // (Opcional) Si deseas actualizar cada 60 segundos:
-    // setInterval(() => { loadBinance(); loadBCV(); }, 60000);
+    // If you ever want to auto-refresh every 60s:
+    // setInterval(() => {
+    //   loadBinance();
+    //   loadBCV();
+    // }, 60000);
   </script>
 </body>
 </html>
