@@ -1,11 +1,7 @@
 // index.js
 // A small Express server that proxies:
-//  • /api/binance → Binance P2P average rate (USD〉VES)
-//  • /api/bcv     → CriptoYa’s oficial BCV rate (USD〉VES)
-// In both cases we first fetch raw text, then attempt JSON.parse.
-// That way if CriptoYa returns plain “Invalid pair” or HTML, we catch it.
-//
-// Dependencies: express, cors, node-fetch
+//  • /api/binance → Binance P2P average rate (SELL & BUY)
+//  • /api/bcv     → CriptoYa’s oficial BCV rate
 
 import express from "express";
 import fetch from "node-fetch";
@@ -14,58 +10,61 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Enable CORS for all origins (or lock down to your domain if you prefer)
+// Enable CORS for all origins (you can restrict this if needed)
 app.use(cors());
 
 /**
  * GET /api/binance
- *   - Fetches average price from Binance P2P API
- *   - If Binance API responds with valid JSON, return { sell, updated }
- *   - If Binance API responds with errors, catch and handle them
+ *   - Fetches average SELL and BUY prices from Binance P2P API
  */
 app.get("/api/binance", async (req, res) => {
   try {
     const BINANCE_API = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search";
 
-    // Request payload for Binance P2P API
-    const POST_DATA = {
-      asset: "USDT",
-      fiat: "VES",
-      merchantCheck: false,
-      page: 1,
-      payTypes: [],
-      publisherType: null,
-      rows: 5,
-      tradeType: "SELL",
+    // Helper to fetch average price from Binance for a trade type
+    const fetchAvgPrice = async (tradeType) => {
+      const POST_DATA = {
+        asset: "USDT",
+        fiat: "VES",
+        merchantCheck: false,
+        page: 1,
+        payTypes: [],
+        publisherType: null,
+        rows: 5,
+        tradeType,
+      };
+
+      const response = await fetch(BINANCE_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(POST_DATA),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Binance API (${tradeType}) responded ${response.status}`);
+      }
+
+      const data = await response.json();
+      const prices = data.data.map((item) => parseFloat(item.adv.price));
+
+      if (prices.length === 0) {
+        throw new Error(`No prices found for tradeType: ${tradeType}`);
+      }
+
+      return prices.reduce((sum, price) => sum + price, 0) / prices.length;
     };
 
-    // Make the POST request to Binance API
-    const response = await fetch(BINANCE_API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(POST_DATA),
-    });
+    // Get both SELL and BUY prices
+    const [sell, buy] = await Promise.all([
+      fetchAvgPrice("SELL"),
+      fetchAvgPrice("BUY"),
+    ]);
 
-    if (!response.ok) {
-      throw new Error(`Binance API responded ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    // Extract prices from the response
-    const prices = data.data.map((item) => parseFloat(item.adv.price));
-    if (prices.length === 0) {
-      throw new Error("No prices found in Binance API response");
-    }
-
-    // Calculate the average price
-    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-
-    // Respond with the average price and timestamp
     return res.json({
-      sell: avgPrice.toFixed(2),
+      sell: sell.toFixed(2),
+      buy: buy.toFixed(2),
       updated: new Date().toISOString(),
     });
   } catch (err) {
@@ -74,12 +73,9 @@ app.get("/api/binance", async (req, res) => {
   }
 });
 
-
 /**
  * GET /api/bcv
- *   - Fetches oficial rate from CriptoYa
- *   - If CriptoYa responds with valid JSON, return { rate, updated }
- *   - If CriptoYa returns plain text (e.g. "Invalid pair"), catch parse‐error
+ *   - Fetches official BCV rate from CriptoYa
  */
 app.get("/api/bcv", async (req, res) => {
   try {
@@ -88,10 +84,8 @@ app.get("/api/bcv", async (req, res) => {
       throw new Error(`CriptoYa responded ${response.status} ${response.statusText}`);
     }
 
-    // Again, read raw text first
     const raw = await response.text();
 
-    // Attempt to parse JSON
     let json;
     try {
       json = JSON.parse(raw);
@@ -100,31 +94,26 @@ app.get("/api/bcv", async (req, res) => {
       throw new Error(`Invalid JSON from CriptoYa: "${snippet}"`);
     }
 
-    // CriptoYa’s oficial API usually returns:
-    //   { "oficial": 174231.00, "date": "2025-06-06T12:55:00.000Z", ... }
     if (typeof json.oficial !== "number" || typeof json.date !== "string") {
       throw new Error(`Unexpected shape from CriptoYa: ${JSON.stringify(json)}`);
     }
 
     return res.json({
       rate: json.oficial,
-      updated: json.date
+      updated: json.date,
     });
-
   } catch (err) {
     console.error("Error fetching BCV:", err.message);
     return res.status(500).json({ error: err.message });
   }
 });
 
-
 /**
- * Root health‐check – just to verify service is up.
+ * Root health check
  */
 app.get("/", (_req, res) => {
   res.send("🟢 MaduroDólar backend is running");
 });
-
 
 app.listen(PORT, () => {
   console.log(`🟢 MaduroDólar backend running on port ${PORT}`);
