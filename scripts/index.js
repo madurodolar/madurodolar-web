@@ -1,6 +1,6 @@
 // index.js
 // A small Express server that proxies:
-//  • /api/binance → CriptoYa’s parallel rate (USD〉VES)
+//  • /api/binance → Binance P2P average rate (USD〉VES)
 //  • /api/bcv     → CriptoYa’s oficial BCV rate (USD〉VES)
 // In both cases we first fetch raw text, then attempt JSON.parse.
 // That way if CriptoYa returns plain “Invalid pair” or HTML, we catch it.
@@ -19,43 +19,55 @@ app.use(cors());
 
 /**
  * GET /api/binance
- *   - Fetches paralelo from CriptoYa
- *   - If CriptoYa responds with valid JSON, return { sell, buy, updated }
- *   - If CriptoYa responds with text like "Invalid pair", we catch parse errors
+ *   - Fetches average price from Binance P2P API
+ *   - If Binance API responds with valid JSON, return { sell, updated }
+ *   - If Binance API responds with errors, catch and handle them
  */
 app.get("/api/binance", async (req, res) => {
   try {
-    const response = await fetch("https://criptoya.com/api/dolar/paralelo");
-    if (!response.ok) {
-      throw new Error(`CriptoYa responded ${response.status} ${response.statusText}`);
-    }
+    const BINANCE_API = "https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search";
 
-    // Read raw text first (it might not always be valid JSON)
-    const raw = await response.text();
+    // Request payload for Binance P2P API
+    const POST_DATA = {
+      asset: "USDT",
+      fiat: "VES",
+      merchantCheck: false,
+      page: 1,
+      payTypes: [],
+      publisherType: null,
+      rows: 5,
+      tradeType: "SELL",
+    };
 
-    // Try to parse JSON; if it fails, we throw with the raw snippet
-    let json;
-    try {
-      json = JSON.parse(raw);
-    } catch (parseErr) {
-      // Show first 100 chars of raw for debugging
-      const snippet = raw.slice(0, 100);
-      throw new Error(`Invalid JSON from CriptoYa: "${snippet}"`);
-    }
-
-    // At this point, json should look like:
-    //   { "sell": 132.45, "buy": 131.00, "variation": ..., "date": "2025-06-06T12:54:37.436Z" }
-    if (typeof json.sell !== "number" || typeof json.buy !== "number" || typeof json.date !== "string") {
-      throw new Error(`Unexpected shape from CriptoYa: ${JSON.stringify(json)}`);
-    }
-
-    // Re‐shape into { sell:"132.45", buy:"131.00", updated:"...ISO..." }
-    return res.json({
-      sell: json.sell.toFixed(2),
-      buy:  json.buy.toFixed(2),
-      updated: json.date
+    // Make the POST request to Binance API
+    const response = await fetch(BINANCE_API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(POST_DATA),
     });
 
+    if (!response.ok) {
+      throw new Error(`Binance API responded ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Extract prices from the response
+    const prices = data.data.map((item) => parseFloat(item.adv.price));
+    if (prices.length === 0) {
+      throw new Error("No prices found in Binance API response");
+    }
+
+    // Calculate the average price
+    const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+
+    // Respond with the average price and timestamp
+    return res.json({
+      sell: avgPrice.toFixed(2),
+      updated: new Date().toISOString(),
+    });
   } catch (err) {
     console.error("Error fetching Binance P2P:", err.message);
     return res.status(500).json({ error: err.message });
