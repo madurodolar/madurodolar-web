@@ -6,6 +6,7 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
+import fs from "fs"; // Import the file system module
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -73,42 +74,30 @@ app.get("/api/binance", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-
 /**
  * GET /api/bcv
- *   - Fetches official BCV rate from CriptoYa
+ *   - Fetches the BCV rate from the bcv.json file
  */
-app.get("/api/bcv", async (req, res) => {
+app.get("/api/bcv", (req, res) => {
   try {
-    const response = await fetch("https://criptoya.com/api/dolar/oficial");
-    if (!response.ok) {
-      throw new Error(`CriptoYa responded ${response.status} ${response.statusText}`);
+    // Read the bcv.json file
+    const bcvData = JSON.parse(fs.readFileSync("bcv.json", "utf8"));
+
+    // Validate the structure of the JSON file
+    if (typeof bcvData.rate !== "number" || typeof bcvData.updated !== "string") {
+      throw new Error("Invalid structure in bcv.json");
     }
 
-    const raw = await response.text();
-
-    let json;
-    try {
-      json = JSON.parse(raw);
-    } catch (parseErr) {
-      const snippet = raw.slice(0, 100);
-      throw new Error(`Invalid JSON from CriptoYa: "${snippet}"`);
-    }
-
-    if (typeof json.oficial !== "number" || typeof json.date !== "string") {
-      throw new Error(`Unexpected shape from CriptoYa: ${JSON.stringify(json)}`);
-    }
-
+    // Respond with the BCV rate
     return res.json({
-      rate: json.oficial,
-      updated: json.date,
+      rate: bcvData.rate,
+      updated: bcvData.updated,
     });
   } catch (err) {
-    console.error("Error fetching BCV:", err.message);
-    return res.status(500).json({ error: err.message });
+    console.error("Error reading bcv.json:", err.message);
+    return res.status(500).json({ error: "Failed to fetch BCV rate" });
   }
 });
-
 /**
  * Root health check
  */
