@@ -46,10 +46,4 @@ jobs:
           # Si sí hay cambios, hacemos commit y push
           git commit -m "Actualiza price.json: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           git push origin main
-      - name: Enviar mensaje a Telegram
-        env:
-          BOT_TOKEN: ${{ secrets.TELE_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELE_CHAT_ID }}
-        run: |
-          chmod +x scripts/send_telegram.sh
-          ./scripts/send_telegram.sh "$BOT_TOKEN" "$CHAT_ID"
+      

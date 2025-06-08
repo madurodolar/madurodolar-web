@@ -1,0 +1,52 @@
+# .github/workflows/notify_telegram.yml
+name: 📣 Notify Telegram at 9 AM & 4 PM EST
+
+on:
+  schedule:
+    # 9 AM EST → 14:00 UTC
+    - cron: '0 14 * * *'
+    # 4 PM EST → 21:00 UTC
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository (to read price.json)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Install jq & curl
+        run: sudo apt-get update && sudo apt-get install -y jq curl
+
+      - name: Send Telegram message
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          # Leer datos
+          sell=$(jq -r '.sell' price.json)
+          buy=$(jq -r '.buy'  price.json)
+          official=$(jq -r '.official' price.json)
+          today=$(date +"%Y-%m-%d")
+
+          # Construir texto
+          text="💡 *Referencia informativa:* Valor del dólar hoy en Venezuela
+
+📊 *Mercado Binance P2P* (informativo):
+• Compra: \`${buy}\` VES
+• Venta:   \`${sell}\` VES
+
+🏛 *Oficial (BCV):*
+\`${official}\` VES
+
+📅 _${today}_"
+
+          # Enviar
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode=Markdown \
+            --data-urlencode "text=${text}"
