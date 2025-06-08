@@ -1,52 +1,76 @@
 # .github/workflows/notify_telegram.yml
-name: 📣 Notify Telegram at 9 AM & 4 PM EST
+
+name: 💬 Notify Telegram with Rates
 
 on:
+  # 1) Regenerate prices every minute (this keeps price.json fresh on gh-pages)
   schedule:
-    # 9 AM EST → 14:00 UTC
+    - cron: '*/1 * * * *'
+  # 2) Notify Telegram only at 9 AM EST (14 UTC) and 4 PM EST (21 UTC)
     - cron: '0 14 * * *'
-    # 4 PM EST → 21:00 UTC
     - cron: '0 21 * * *'
+  # 3) Allow manual trigger
   workflow_dispatch:
 
 jobs:
-  notify:
+  build-and-notify:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository (to read price.json)
+
+      # --- ALWAYS regenerate your price.json from Binance ---
+      - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
 
-      - name: Install jq & curl
-        run: sudo apt-get update && sudo apt-get install -y jq curl
+      - name: Install dependencies (jq & curl)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
 
+      - name: Fetch Binance P2P & update price.json
+        run: |
+          chmod +x scripts/fetch_binance_p2p.sh
+          ./scripts/fetch_binance_p2p.sh
+
+      - name: Commit & push price.json if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add price.json || true
+          git diff --quiet --exit-code || (git commit -m "chore: update price.json @ $(date -u +'%Y-%m-%dT%H:%M:%SZ')" && git push)
+
+      # --- ONLY on the Telegram‐schedule or manual dispatch: send message ---
       - name: Send Telegram message
+        if: |
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'schedule' &&
+           (github.event.schedule == '0 14 * * *' || github.event.schedule == '0 21 * * *'))
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
-          # Leer datos
-          sell=$(jq -r '.sell' price.json)
-          buy=$(jq -r '.buy'  price.json)
-          official=$(jq -r '.official' price.json)
+          # 1) Read Binance P2P prices
+          data=$(cat price.json)
+          sell=$(jq -r '.sell' <<<"$data")
+          buy=$(jq -r '.buy'  <<<"$data")
+
+          # 2) Read BCV rate from bcv.json
+          bcv=$(jq -r '.rate'  bcv.json)
+          bcvu=$(jq -r '.updated' bcv.json)
+
+          # 3) Build the message
           today=$(date +"%Y-%m-%d")
+          text="💡 *Referencia informativa: Valor del dólar hoy en Venezuela*"
+          text+="\n\n📊 *Mercado Binance P2P* (informativo):"
+          text+="\n• Compra: *${buy}* VES"
+          text+="\n• Venta:  *${sell}* VES"
+          text+="\n\n🏛 *Oficial (BCV):* ${bcv} VES"
+          text+="\n_Ultima actualización BCV:_ \`${bcvu}\`"
+          text+="\n\n📅 _${today}_"
 
-          # Construir texto
-          text="💡 *Referencia informativa:* Valor del dólar hoy en Venezuela
-
-📊 *Mercado Binance P2P* (informativo):
-• Compra: \`${buy}\` VES
-• Venta:   \`${sell}\` VES
-
-🏛 *Oficial (BCV):*
-\`${official}\` VES
-
-📅 _${today}_"
-
-          # Enviar
+          # 4) Send to Telegram
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
-            -d chat_id="${TELEGRAM_CHAT_ID}" \
-            -d parse_mode=Markdown \
-            --data-urlencode "text=${text}"
+               -d chat_id="${TELEGRAM_CHAT_ID}" \
+               -d parse_mode=MarkdownV2 \
+               -d disable_web_page_preview=true \
+               -d text="${text}"
+
