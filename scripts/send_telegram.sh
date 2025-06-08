@@ -9,41 +9,32 @@ if [[ -z "$BOT_TOKEN" || -z "$CHAT_ID" ]]; then
   exit 1
 fi
 
-# 1) Load the P2P JSON (prefer local file if present)
-if [[ -f price.json ]]; then
-  p2p=$(cat price.json)
-else
-  p2p=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/price.json)
-fi
-
+# 1) Load the P2P JSON
+p2p=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/price.json)
 buy=$(jq -r '.buy'  <<<"$p2p")
 sell=$(jq -r '.sell' <<<"$p2p")
 
-# 2) Load the BCV JSON (prefer local file)
-if [[ -f bcv.json ]]; then
-  bcvj=$(cat bcv.json)
-else
-  bcvj=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/bcv.json)
-fi
-
+# 2) Load the BCV JSON
+bcvj=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/bcv.json)
 bcv=$(jq -r '.rate'    <<<"$bcvj")
 bcvu=$(jq -r '.updated' <<<"$bcvj")
 
-# 3) Build today’s date
-today=$(date +"%Y-%m-%d")
+# 3) Build today’s date and escape parentheses
+raw_date=$(date +"%Y-%m-%d")
+# escape parentheses around the date in MarkdownV2: \( and \)
+date_escaped="\\(${raw_date}\\)"
 
-# 4) Construct the Markdown-V2 message
+# 4) Construct the message in MarkdownV2
 msg="💡 *Referencia informativa: Valor del dólar hoy en Venezuela*"
 msg+="\n\n📊 *Mercado Binance P2P* (informativo):"
 msg+="\n• Compra: *${buy}* VES"
 msg+="\n• Venta:  *${sell}* VES"
 msg+="\n\n🏛 *Oficial (BCV):* ${bcv} VES"
-msg+="\n_Ultima actualización BCV:_ \`${bcvu}\`"
-msg+="\n\n📅 _${today}_"
+msg+="\n\n📅 _${date_escaped}_"
 
 # 5) Send to Telegram
 curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
   -d chat_id="${CHAT_ID}" \
-  -d parse_mode="MarkdownV2" \
-  -d disable_web_page_preview=true \
-  --data-urlencode "text=${msg}"
+  -d parse_mode=MarkdownV2 \
+  --data-urlencode "text=${msg}" \
+  >/dev/null
