@@ -32,15 +32,15 @@ raw_date=$(date +"%Y-%m-%d")
 date_code="\`${raw_date}\`"
 
 # 4) Construct MarkdownV2 message — note: all special chars are escaped
-msg="💡 *Valor del dólar hoy en Venezuela*"
+msg="💡 *Valor del dólar hoy en Venezuela*            "
 
-msg+="📊 *Mercado Binance P2P* (informativo):"
+msg+="📊 *Mercado Binance P2P* (informativo):          "
 
-msg+="• Compra: \`${buy}\` VES"
+msg+="• Compra: \`${buy}\` VES                         "
 
-msg+="• Venta:  \`${sell}\` VES"
+msg+="• Venta:  \`${sell}\` VES                        "
 
-msg+="🏛 *Oficial (BCV):* \`${bcv}\` VES"
+msg+="🏛 *Oficial (BCV):* \`${bcv}\` VES                "
 
 msg+=" 📅 ${date_code}"
 
