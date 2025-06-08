@@ -31,7 +31,7 @@ bcvu=$(jq -r '.updated' <<<"$bcvj")
 raw_date=$(date +"%Y-%m-%d")
 date_code="\`${raw_date}\`"
 
-# 4) Construct MarkdownV2 message
+# 4) Construct MarkdownV2 message — note: all special chars are escaped
 msg="💡 *Referencia informativa: Valor del dólar hoy en Venezuela*"
 msg+="\n\n📊 *Mercado Binance P2P* \\(informativo\\):"
 msg+="\n• Compra: \`${buy}\` VES"
@@ -40,7 +40,7 @@ msg+="\n\n🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES"
 msg+="\n_Ultima actualización BCV:_ \`${bcvu}\`"
 msg+="\n\n📅 ${date_code}"
 
-# 5) Send to Telegram and echo response
+# 5) Send to Telegram and print the API response
 response=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
   -d chat_id="${CHAT_ID}" \
   -d parse_mode=MarkdownV2 \
