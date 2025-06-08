@@ -62,3 +62,5 @@ BUY_RATE=$(fetch_average_price "BUY")
 
 # Generate price.json with both rates
 echo "{\"sell\":\"$(printf "%.3f" $SELL_RATE)\",\"buy\":\"$(printf "%.3f" $BUY_RATE)\",\"updated\":\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" > price.json
+echo "✅ price.json written:"
+cat price.json
