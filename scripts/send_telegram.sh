@@ -36,11 +36,11 @@ msg="💡 *Valor del dólar hoy en Venezuela*"
 
 msg+="📊 *Mercado Binance P2P* (informativo):"
 
-msg+="• Compra: `${buy}` VES"
+msg+="• Compra: \\`${buy}\\` VES"
 
-msg+="• Venta:  `${sell}` VES"
+msg+="• Venta:  \\`${sell}\\` VES"
 
-msg+="🏛 *Oficial (BCV):* `${bcv}` VES"
+msg+="🏛 *Oficial (BCV):* \\`${bcv}\\` VES"
 
 msg+=" 📅 ${date_code}"
 
