@@ -9,29 +9,38 @@ if [[ -z "$BOT_TOKEN" || -z "$CHAT_ID" ]]; then
   exit 1
 fi
 
-# Load P2P prices
-p2p_json=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/price.json)
-buy=$(jq -r '.buy'  <<<"$p2p_json")
-sell=$(jq -r '.sell' <<<"$p2p_json")
+# 1) Load price.json (local if present)
+if [[ -f price.json ]]; then
+  p2p=$(<price.json)
+else
+  p2p=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/price.json)
+fi
+buy=$(jq -r '.buy'  <<<"$p2p")
+sell=$(jq -r '.sell' <<<"$p2p")
 
-# Load BCV rate
-bcv_json=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/bcv.json)
-bcv=$(jq -r '.rate'    <<<"$bcv_json")
-bcvu=$(jq -r '.updated' <<<"$bcv_json")
+# 2) Load bcv.json (local if present)
+if [[ -f bcv.json ]]; then
+  bcvj=$(<bcv.json)
+else
+  bcvj=$(curl -s https://raw.githubusercontent.com/madurodolar/madurodolar/main/bcv.json)
+fi
+bcv=$(jq -r '.rate'    <<<"$bcvj")
+bcvu=$(jq -r '.updated' <<<"$bcvj")
 
-# Today’s date
-today=$(date +"%Y-%m-%d")
+# 3) Build raw date (YYYY-MM-DD) and wrap it in backticks for code
+raw_date=$(date +"%Y-%m-%d")
+date_code="\`${raw_date}\`"
 
-# Build the message with real newlines and escape parentheses for MarkdownV2
-msg=$'💡 *Referencia informativa: Valor del dólar hoy en Venezuela*'"\n\n"
-msg+=$'📊 *Mercado Binance P2P* \\(informativo\\):'"\n"
-msg+="• Compra: \`${buy}\` VES"$'\n'
-msg+="• Venta:  \`${sell}\` VES"$'\n\n'
-msg+=$'🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES'$'\n'
-msg+="_Ultima actualización BCV:_ `"${bcvu}"'`'$'\n\n'
-msg+="📅 \`${today}\`"
+# 4) Construct MarkdownV2 message
+msg="💡 *Referencia informativa: Valor del dólar hoy en Venezuela*"
+msg+="\n\n📊 *Mercado Binance P2P* \\(informativo\\):"
+msg+="\n• Compra: \`${buy}\` VES"
+msg+="\n• Venta:  \`${sell}\` VES"
+msg+="\n\n🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES"
+msg+="\n_Ultima actualización BCV:_ \`${bcvu}\`"
+msg+="\n\n📅 ${date_code}"
 
-# Send to Telegram
+# 5) Send to Telegram and echo response
 response=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
   -d chat_id="${CHAT_ID}" \
   -d parse_mode=MarkdownV2 \
@@ -39,6 +48,3 @@ response=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage
 
 echo "Telegram API response:"
 echo "${response}"
-
-
-
