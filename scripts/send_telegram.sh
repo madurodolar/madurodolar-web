@@ -40,10 +40,10 @@ date_code="\`${raw_date}\`"
 # 4) Construct MarkdownV2 message — note: all special chars are escaped
 msg="💡Valor del dólar hoy en Venezuela"
 msg+="            📊 *Mercado Binance P2P* :    "
-msg+="            • Compra: \`${buy}\` VES     "
-msg+="            • Venta:  \`${sell}\` VES    "
-msg+="            🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES    "
-msg+="                      📅 ${date_code}     "
+msg+="                 • Compra: \`${buy}\` VES     "
+msg+="                 • Venta:  \`${sell}\` VES    "
+msg+="                           🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES    "
+msg+="                                📅${date_code}     "
 
 
 # 5) Send to Telegram and print the API response
