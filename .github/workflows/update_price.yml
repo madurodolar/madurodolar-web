@@ -7,7 +7,7 @@ on:
   schedule:
     - cron: '*/1 * * * *'
   # Permite ejecutarlo manualmente desde la pestaña  Actions!
-  
+  workflow_dispatch:
 
 jobs:
   update_prices:

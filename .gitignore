@@ -3,4 +3,7 @@ npm-debug.log
 *.log
 .DS_Store
 build/
-
+venv/
+**/venv/
+*.pyc
+__pycache__/
