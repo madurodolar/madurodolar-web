@@ -29,16 +29,16 @@ bcvu=$(jq -r '.updated' <<<"$bcvj")
 
 # 3) Build raw date (YYYY-MM-DD) and wrap it in backticks for code
 raw_date=$(date +"%Y-%m-%d")
-date_code="\`${raw_date}\`"
+date_code="\\\`${raw_date}\\\`"  # Escape backticks for MarkdownV2
 
 # 4) Construct MarkdownV2 message — note: all special chars are escaped
-# 4) Construct MarkdownV2 message – note: all special chars are escaped
-msg="*Valor del dólar hoy en Venezuela*"
-msg+="\n*Mercado Binance P2P* \\(informativo\\):"
-msg+="\n• Compra: \`${buy}\` VES"
-msg+="\n• Venta: \`${sell}\` VES"
-msg+="\n📊 *Oficial (BCV):* \`${bcv}\` VES"
-msg+="\n📅 ${date_code}"
+msg="💡 *Valor del dólar hoy en Venezuela*"
+msg+="\n\n📊 *Mercado Binance P2P* \\(informativo\\):"
+msg+="\n\n• Compra: \\\`${buy}\\\` VES"
+msg+="\n\n• Venta:  \\\`${sell}\\\` VES"
+msg+="\n\n🏛 *Oficial \\(BCV\\):* \\\`${bcv}\\\` VES"
+msg+="\n\n_Ultima actualización BCV:_ \\\`${bcvu}\\\`"
+msg+="\n\n📅 ${date_code}"
 
 # 5) Send to Telegram and print the API response
 response=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
