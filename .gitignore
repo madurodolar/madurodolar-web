@@ -1,3 +1,6 @@
 node_modules/
 npm-debug.log
-twitter-bot/venv/
+*.log
+.DS_Store
+build/
+
