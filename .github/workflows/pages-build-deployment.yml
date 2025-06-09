@@ -1,9 +1,16 @@
 name: GitHub Pages
 
 on:
-  push:
-    branches:
-      - main   # or your publishing branch
+    push:
+        branches:
+          - main   # or your publishing branch
+    
+    # <<< add this block
+permissions:
+    contents: read       # you only need read for your repo files
+    pages: write         # needed to push to GitHub Pages
+    id-token: write      # needed by deploy-pages to mint an OIDC token
+    # <<< end permissions
 
 jobs:
   build-deploy:
