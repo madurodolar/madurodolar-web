@@ -38,13 +38,23 @@ date_code="\`${raw_date}\`"
 
 
 # 4) Construct MarkdownV2 message — note: all special chars are escaped
-msg="💡 *Referencia informativa: Valor del dólar hoy en Venezuela*"
-msg+="\n\n📊 *Mercado Binance P2P* \\(informativo\\):"
-msg+="\n• Compra: \`${buy}\` VES"
-msg+="\n• Venta:  \`${sell}\` VES"
-msg+="\n\n🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES"
-msg+="\n_Ultima actualización BCV:_ \`${bcvu}\`"
-msg+="\n\n📅 ${date_code}"
+msg=$(
+  cat <<EOF
+💡 *Valor del dólar hoy en Venezuela*
+
+📊 *Mercado Binance P2P* \\(informativo\\):
+
+• Compra: \\\`${buy//./\\.}\\\` VES
+
+• Venta:  \\\`${sell//./\\.}\\\` VES
+
+🏛 *Oficial \\(BCV\\):* \\\`${bcv//./\\.}\\\` VES
+
+_Ultima actualización BCV:_ \\\`${bcvu//./\\.}\\\`
+
+📅 ${date_code}
+EOF
+)
 
 
 # 5) Send to Telegram and print the API response
