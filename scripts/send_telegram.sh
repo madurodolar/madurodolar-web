@@ -29,7 +29,7 @@ bcvu=$(jq -r '.updated' <<<"$bcvj")
 
 # 3) Build raw date (YYYY-MM-DD) and wrap it in backticks for code
 raw_date=$(date +"%Y-%m-%d")
-date_code="\\\`${raw_date}\\\`"  # Escape backticks for MarkdownV2
+date_code="\\\`${raw_date//-/\\.}\\\`"  # Escape backticks and dashes for MarkdownV2
 
 # 4) Construct MarkdownV2 message — note: all special chars are escaped
 msg=$(
