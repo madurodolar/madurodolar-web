@@ -16,7 +16,7 @@ jobs:
       - name: Setup Ruby for Jekyll
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.x'   # match your site’s Ruby version
+          ruby-version: '3.2.10'   # match your site’s Ruby version
 
       - name: Install dependencies
         run: |
