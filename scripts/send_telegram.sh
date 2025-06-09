@@ -32,13 +32,23 @@ raw_date=$(date +"%Y-%m-%d")
 date_code="\\\`${raw_date}\\\`"  # Escape backticks for MarkdownV2
 
 # 4) Construct MarkdownV2 message — note: all special chars are escaped
-msg="💡 *Valor del dólar hoy en Venezuela*"
-msg+="\n\n📊 *Mercado Binance P2P* \\(informativo\\):"
-msg+="\n\n• Compra: \\\`${buy}\\\` VES"
-msg+="\n\n• Venta:  \\\`${sell}\\\` VES"
-msg+="\n\n🏛 *Oficial \\(BCV\\):* \\\`${bcv}\\\` VES"
-msg+="\n\n_Ultima actualización BCV:_ \\\`${bcvu}\\\`"
-msg+="\n\n📅 ${date_code}"
+msg=$(
+  cat <<EOF
+💡 *Valor del dólar hoy en Venezuela*
+
+📊 *Mercado Binance P2P* \\(informativo\\):
+
+• Compra: \\\`${buy}\\\` VES
+
+• Venta:  \\\`${sell}\\\` VES
+
+🏛 *Oficial \\(BCV\\):* \\\`${bcv}\\\` VES
+
+_Ultima actualización BCV:_ \\\`${bcvu}\\\`
+
+📅 ${date_code}
+EOF
+)
 
 # 5) Send to Telegram and print the API response
 response=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
