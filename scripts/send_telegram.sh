@@ -38,13 +38,13 @@ msg=$(
 
 📊 *Mercado Binance P2P* \\(informativo\\):
 
-• Compra: \\\`${buy}\\\` VES
+• Compra: \\\`${buy//./\\.}\\\` VES
 
-• Venta:  \\\`${sell}\\\` VES
+• Venta:  \\\`${sell//./\\.}\\\` VES
 
-🏛 *Oficial \\(BCV\\):* \\\`${bcv}\\\` VES
+🏛 *Oficial \\(BCV\\):* \\\`${bcv//./\\.}\\\` VES
 
-_Ultima actualización BCV:_ \\\`${bcvu}\\\`
+_Ultima actualización BCV:_ \\\`${bcvu//./\\.}\\\`
 
 📅 ${date_code}
 EOF
