@@ -23,8 +23,8 @@ jobs:
 
       - name: Send Telegram message
         env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_TOKEN: ${{ secrets.TELE_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELE_CHAT_ID }}
         run: |
           # 1) Leer price.json (de repo)
           if [[ -f price.json ]]; then
