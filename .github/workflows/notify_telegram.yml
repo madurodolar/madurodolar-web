@@ -15,7 +15,7 @@ jobs:
         with:
           submodules: false
           fetch-depth: 0
-          
+
       - name: Install dependencies (jq & curl)
         run: |
           sudo apt-get update
@@ -48,13 +48,12 @@ jobs:
 
           # 3) Construir mensaje MarkdownV2 (escapa caracteres especiales)
           today=$(date +"%Y-%m-%d")
-          text="💡 *Referencia informativa: Valor del dólar hoy en Venezuela*"
-          text+="\n\n📊 *Mercado Binance P2P* (informativo):"
-          text+="\n• Compra: *${buy}* VES"
-          text+="\n• Venta:  *${sell}* VES"
-          text+="\n\n🏛 *Oficial (BCV):* ${bcv} VES"
-          text+="\n_Ultima actualización BCV:_ \`${bcvu}\`"
-          text+="\n\n📅 _${today}_"
+          msg="💡Valor del dólar hoy en Venezuela"
+          msg+="            📊 *Mercado Binance P2P* :        "
+          msg+="                       •Compra: \`${buy}\` VES             "
+          msg+="                         •Venta:  \`${sell}\` VES               "
+          msg+="                                🏛 *Oficial \\(BCV\\):* \`${bcv}\` VES          "
+          msg+="                                📅${date_code}     "
 
           # 4) Enviar a Telegram
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
