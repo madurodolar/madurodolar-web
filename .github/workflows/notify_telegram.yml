@@ -12,7 +12,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+        with:
+          submodules: false
+          fetch-depth: 0
+          
       - name: Install dependencies (jq & curl)
         run: |
           sudo apt-get update
